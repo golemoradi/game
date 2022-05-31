@@ -1,0 +1,46 @@
+
+{% load static %}
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Profile</title>
+  <link rel="icon" type="image/png" href="{% static 'registration/lasergun.png' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'lobby/mystyle.css' %}">
+</head>
+
+<body style="color: #00fff7">
+  <div>
+    <a href="{% url 'lobby' %}">Lobby</a>
+    <a href="{% url 'logout' %}">Logout</a>
+  </div>
+
+  <header style="text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 25px #00fff7, 
+    0 0 30px #00fff7, 0 0 40px #00fff7, 0 0 50px #00fff7, 0 0 70px #00fff7;">
+      <h1>Profile</h1>
+  </header>
+  {% if request.user.is_authenticated %}
+  <p> hello {{ request.user.username }}!</p>
+  {% endif %}
+
+  <table style="border: none;">
+    <h3> Games Played: </h3>
+    <tr>
+      <th>Players</th>
+      <th>Date</th>
+      <th>Winner</th>
+    </tr>
+    {% for game in games %}
+    <tr>
+
+
+      <td> {{ game }}</td>
+
+      <td> {{ game.date }} </td>
+      <td> {{ game.winner }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

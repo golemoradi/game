@@ -1,0 +1,116 @@
+{% load static%}
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Lobby</title>
+  <link rel="icon" type="image/png" href="{% static 'registration/lasergun.png' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'lobby/mystyle.css' %}">
+
+  <style type="">
+        
+  </style>
+</head>
+
+<body style="color: #0044ff">
+  <div>
+  <a href="{% url 'profile' %}">Profile</a>
+  <a href="{% url 'logout' %}">Logout</a>
+  </div>
+
+  <header style="text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 25px #0044ff, 
+    0 0 30px #0044ff, 0 0 40px #0044ff, 0 0 50px #0044ff, 0 0 70px #0044ff;">
+      <h1>Lobby</h1>
+  </header>
+
+  <div id="new-game">
+    <input id="create-new-game" type="button" value="New game"><br/>
+  </div>
+  
+  <div id="join">
+    <input id="join-game" type="button" value="Join game">
+  </div>
+  </div>
+</body>
+
+<script>
+
+  var socket = new WebSocket('ws://' + window.location.host + '/ws/lobby/');
+
+  var ID = document.createElement("p");
+  var playerList = document.createElement("p").setattribute("id", "players");
+
+  var enterID = document.createElement("input");
+  enterID.setattribute("id","id-input");
+  enterID.setattribute("type","text");
+  enterID.setattribute("size","100");
+
+  var sendID = document.createElement("input");
+  sendID.setattribute("id","id-enter");
+  enterID.setattribute("type","button");
+  enterID.setattribute("value","Enter");
+  
+  var startGame = document.createElement("input");
+  startGame.setattribute("id","start-game");
+  startGame.setattribute("type", "button");
+  startGame.setattribute("value", "Start Game!");
+
+  socket.onmessage = function (e) { 
+    var data = JSON.parse(e.data);
+    //idk if perhaps (data.gameID) would work
+    if (data.type==2) { 
+      var gameID = data['gameID'];
+      var node = document.createTextNode(gameID);
+      ID.appendChild(node);
+    } else if (data.type==0) {
+      var player = data['player'];
+      playerList.innerText('your opponent is ${player.user_id} !');
+      ID.appendChild(startGame);
+    }
+  }
+
+  document.getElementById('start-game').onclick = function(e) {
+    socket.send(JSON.stringify({
+        'action': 'start-game'
+    }))
+  };
+
+  socket.onclose = function(e) {
+    console.error('socket closed unexpectedly');
+  };
+
+  //requesting a new game 
+  document.getElementById('create-new-game').onclick = function(e) {
+    var string = "create-game"
+    socket.send(JSON.stringify({
+      'action': string
+    }));
+/*    document.getElementById('create-new-game').appendChild(ID);
+    document.getElementById('create-new-game').appendChild(playerList);*/
+  }
+
+  document.getElementById('join-game').onclick = function(e) {
+    document.getElementById('join').appendChild(enterID);
+    document.getElementById('join').appendChild(sendID);
+  }
+
+/*  document.getElementById('id-input').focus();
+  document.getElementById('id-input').onkeyup = function(e) {
+    if (e.keyCode === 13) {  // enter, return
+      document.getElementById('id-enter').click();
+    }
+  };
+
+  document.getElementById('id-enter').onclick = function(e) {
+    var gameID = document.getElementById('id-input').value;
+    socket.send(JSON.stringify({
+        'gameID': gameID
+    }))
+    document.getElementById('join').appendChild(ID);
+    document.getElementById('join').appendChild(playerList);
+  }*/
+
+</script>
+
+</html>

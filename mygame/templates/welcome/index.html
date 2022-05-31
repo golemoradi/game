@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Lazer</title>
+  {% load static %}
+  <link rel="icon" type="image/png" href="{% static 'registration/lasergun.png' %}">
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'registration/welcomecss.css' %}">
+</head>
+<body>
+  <header>
+    <h1>LAZER</h1>
+  </header>
+  <p>
+    <a href="{% url 'login' %}">Login</a>  
+  </p>
+  <p>
+    <a href="{% url 'signup' %}">Signup</a>
+  </p>
+</body>
+</html>

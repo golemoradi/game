@@ -1,0 +1,123 @@
+@font-face {
+  font-family: mySecondFont;
+  src: url(dotty.ttf);
+}
+
+@font-face { 
+	font-family: myFirstFont;
+	src: url(DISKOTEQUE.ttf);
+ }
+
+header {
+  font-family: myFirstFont;
+  font-size: 50pt;
+  color: #13ff03;
+  padding-bottom: 20px;
+  text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 25px #13ff03, 0 0 30px #13ff03,
+   0 0 40px #13ff03, 0 0 50px #13ff03, 0 0 70px #13ff03;
+}
+
+body {
+  padding-top: 20px;
+  background-color: black;
+  font-family: mySecondFont;
+  font-size: 20pt;
+  margin: 20px;
+  color: #13ff03
+}
+
+#thegame {
+  text-align: center;
+  padding-left: 60px;
+  padding-right: 60px
+}
+
+div {
+  display: inline-block;
+}
+
+#chatroom {
+  text-align: center;
+}
+
+#lazer {
+  border: 2px solid #555555;
+}
+
+#instr {
+	color: white;
+	font-size: 30pt;
+}
+
+textarea {
+  background-color: black;
+  font-family: mySecondFont;
+  border: 2px solid #555555;
+  font-size: 18pt;
+  color: #13ff03;
+  border-radius: 25px;
+  outline: none;
+  padding: 7px;
+  width: 600px;
+  height: 400px;
+}
+
+textarea:focus {
+  border: 3px solid #13ff03;
+}
+
+#chat-message-input {
+  width: 500px;
+}
+
+#chat-message-input:focus {
+  border: 3px solid #13ff03;
+}
+
+h1 {
+	color: white;
+}
+#chat-message-input {
+  width: 600px;
+}
+
+#chat-message-input:focus {
+  border: 3px solid #13ff03;
+}
+
+
+input[type=button] {
+  font-family: mySecondFont;
+  font-size: 20pt;
+  background-color: #fff;
+  border: none;
+  color: black;
+  padding: 10px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 25px;
+  border: 2px solid #555555;
+  outline: none;
+  box-shadow: 0 7px #999;
+  margin-top: 10px;
+}
+
+input[type=button]:active {
+  box-shadow: 0 3px #666;
+  transform: translateY(4px);
+}
+
+input[type=text] {
+  font-family: mySecondFont;
+  font-size: 18pt;
+  background-color: black;
+  color: white;
+  border: 2px solid #555555;
+  border-radius: 25px;
+  outline: none;
+  width: 600px;
+  padding: 7px;
+}

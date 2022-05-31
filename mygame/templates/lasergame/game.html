@@ -1,0 +1,294 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/> 
+  <title>Lazer</title>
+  <link rel="icon" type="image/png" href="{% static 'account/lasergun.png' %}">
+  <link rel="stylesheet" href="{% static 'lobby/gamecss.css %}">
+
+</head>
+<body id="game">
+  <div id="thegame" class="side">
+    <header> Lazer </header>
+    <canvas id="lazer" width="600" height="600"></canvas><br/>
+    <input id="pause-game" type="button" value="Pause game" onclick="pause()"/>
+  </div>  
+  <div id="chatroom" class="side">
+    <h1>How to play:</h1>
+    <p id="instr"> don't hit the walls...! move with arrow keys</p>
+    <p>Let's chat... say hi!</p>
+    <textarea readonly id="chat-log" cols="100" rows="20"></textarea><br/>
+    <input id="chat-message-input" type="text" size="100"/><br/>
+    <input id="chat-message-submit" type="button" value="Send"/>
+  </div>
+
+<script>
+  const canvas = document.getElementById('lazer');
+  const context = canvas.getContext('2d');
+  const unit = 15;
+  var button = document.getElementById('pause-game');
+
+  class Player {
+    constructor(x, y, colour) {
+      this.user_id = '';
+      this.colour = colour;
+      this.dead = false;
+      this.direction = '';
+      this.move = '';
+      this.x = x;
+      this.y = y;
+      this.startX = x;
+      this.startY = y;
+
+      this.constructor.counter = (this.constructor.counter || 0) + 1;
+      Player.allInstances.push(this);
+    };
+  };
+
+  Player.allInstances = [];
+
+  let player1 = new Player(unit * 6, unit * 6, "#d000ff");
+  player1.user_id = "{{ request.user.username }}";
+  let player2 = new Player(unit * 33, unit * 33, "#0044ff");
+
+  //making the game board
+  function getPlayableCells(canvas, unit) {
+    let playableCells = new Set();
+    for (let i = 0; i < canvas.width / unit; i++) {
+      for (let j = 0; j < canvas.height / unit; j++) {
+        playableCells.add(`${i * unit}x${j * unit}y`);
+      };
+    };
+    return playableCells;
+  };
+
+  let playableCells = getPlayableCells(canvas, unit);
+
+  function drawBackground() {
+    context.strokeStyle = '#13ff03';
+    for (let i = 0; i <= canvas.width / unit + 2; i += 2) {
+      for (let j = 0; j <= canvas.height / unit + 2; j += 2) {
+        context.strokeRect(0, 0, unit * i, unit * j);
+      };
+    };
+
+    context.strokeStyle = 'black';
+    context.lineWidth = 2;
+    for (let i = 1; i <= canvas.width / unit; i += 2) {
+      for (let j = 1; j <= canvas.height / unit; j += 2) {
+        context.strokeRect(0, 0, unit * i, unit * j);
+      };
+    };
+    context.lineWidth = 1;
+  };
+
+  drawBackground();
+
+  function drawStartingPositions(players) {
+    players.forEach(p => {
+      context.fillStyle = p.colour;
+      context.fillRect(p.x, p.y, unit, unit);
+      context.strokeStyle = 'black';
+      context.strokeRect(p.x, p.y, unit, unit);
+    });
+  };
+
+  drawStartingPositions(Player.allInstances);
+
+//catching the moves and making sure no illegal move
+//upon making a move, calls sendMove
+  document.addEventListener('keydown', function(event) {
+    //this is to prevent default scrolling of the keys 
+    let key = event.keycode;
+    if (key === 37 || key === 38 || key === 39 || key === 40) {
+      event.preventDefault();
+    };
+    switch (event.keyCode) {
+      case 37: // arrow left
+        if (player1.direction !== 39) {
+          player1.move = 37;
+         // sendMove();
+      }
+        break;
+      case 38: // arrow up
+        if (player1.direction !== 40) {
+          player1.move = 38;
+         // sendMove();
+      }
+        break;
+      case 39: // arrow right
+        if (player1.direction !== 37) {
+          player1.move = 39;
+        //  sendMove();
+      }
+        break;
+      case 40: // arrow down
+        if (player1.direction !== 38) {
+          player1.move = 40;
+        //  sendMove();
+        }
+        break;
+      }
+  }); 
+
+//socket stuff
+
+//move is sent to websocket 
+  function sendMove() { 
+    var playermove = {
+      'player': player1.user_id;
+      'move': player1.move;
+    }
+    socket.send(JSON.stringify(playermove));
+  } 
+
+  socket.onmessage = function(e) {
+    var data = JSON.parse(e.data);
+    if (data.type==chat_message) {
+      var message = data['message'];
+      document.getElementById('chat-log').value += (message + '\n');
+    } else if (data.type==game) {
+      var player = data['message'];
+      if (player.curr_user != player1.user_id) {
+        player2.user_id = player.curr_user;
+        updateMove(player2);
+      }
+    }
+  } 
+
+  document.getElementById('chat-message-input').focus();
+  document.getElementById('chat-message-input').onkeyup = function(e) {
+    if (e.keyCode === 13) {  // enter, return
+      document.getElementById('chat-message-submit').click();
+    }
+  };
+
+  document.getElementById('chat-message-submit').onclick = function(e) {
+    var messageInputDom = document.getElementById('chat-message-input');
+    var message = messageInputDom.value;
+    socket.send(JSON.stringify({
+      'message': message
+    }));
+
+    messageInputDom.value = '';
+  }
+
+
+  //updating the move for player2
+  function updateMove(player) {
+    player2.move = player.move;
+  }
+
+  let outcome, winnerColor, playerCount = Player.allInstances.length;
+
+  function endGame(win) {
+    socket.send(JSON.stringify({
+      'winner': win
+    }));
+  }
+
+  function draw() {
+    if (Player.allInstances.filter(p => !p.move).length == 0) {
+      //a winner is left
+      if (playerCount === 1) {
+        const alivePlayers = Player.allInstances.filter(p => p.dead === false);
+        outcome = `Player ${alivePlayers[0].user_id} wins!`;
+        winnerColor = alivePlayers[0].colour;
+        endGame(alivePlayers.user_id);
+      } else if (playerCount === 0) {
+        outcome = 'Draw!';
+        endGame('Draw');
+
+      }
+
+      //end game 
+      if (outcome) {
+        createResultsScreen(winnerColor);
+        clearInterval(game);
+      };
+
+
+      Player.allInstances.forEach(p => {
+        //if there is a move
+        if (p.move) {
+          p.direction = p.move;
+          //updating location 
+          context.fillStyle = p.color;
+          context.fillRect(p.x, p.y, unit, unit);
+          context.strokeStyle = 'black';
+          context.strokeRect(p.x, p.y, unit, unit);
+
+          if (!playableCells.has(`${p.x}x${p.y}y`) && p.dead === false) {
+            p.dead = true;
+            p.direction = '';
+            playerCount -= 1;
+          }
+
+          playableCells.delete(`${p.x}x${p.y}y`);
+
+          if (!p.dead) {
+            if (p.direction == 37) {
+              p.x -= unit;
+            }
+            if (p.direction == 38) {
+              p.y -= unit;
+            }
+            if (p.direction == 39) {
+              p.x += unit;
+            }
+            if (p.direction == 40) {
+              p.y += unit;
+          }
+          };
+
+        };
+
+      });
+
+     }
+  }
+
+let game = setInterval(draw, 100);
+
+function pause() { 
+    button.value = 'Resume game';
+    button.onclick = play;
+    clearInterval(game);
+    
+  }
+
+  function play() {
+    button.value = 'Pause game';
+    button.onclick = pause;
+    game = setInterval(draw, 100);
+  }
+
+//result screen 
+function createResultsScreen(colour) {
+  var result = document.createElement('div');
+  result.id = "result";
+  result.style.color = colour;
+  result.style.background = '#00000088';
+
+  var resultText = document.createElement('h1');
+  resultText.innerText = outcome;
+
+  var replay = document.createElement('button');
+  replayButton.innerText = 'Replay (Press Enter)';
+  replayButton.onclick = resetGame;
+
+  result.appendChild(resultText);
+  result.appendChild(replayButton);
+  document.getElementById("thegame").appendChild(result);
+
+  document.addEventListener('keydown', (e) => {
+  if (event.keyCode == 32 || event.keycode == 13) {
+    resetGame();
+  }
+    });
+};
+ 
+</script>
+</body>
+</html>

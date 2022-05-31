@@ -1,0 +1,29 @@
+@font-face {
+  font-family: myFirstFont;
+  src: url(DISKOTEQUE.TTF);
+}
+@font-face {
+  font-family: mySecondFont;
+  src: url(dotty.ttf);
+}
+header {
+  font-family: myFirstFont;
+  font-size: 50pt;
+  text-align: center;
+  color: #13ff03;
+  padding-top: 35px;
+  text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 25px #13ff03, 0 0 30px #13ff03, 0 0 40px #13ff03, 0 0 50px #13ff03, 0 0 70px #13ff03;
+}
+body { 
+  background-color: black;
+  font-family: mySecondFont;
+  font-size: 30pt;
+  text-align: center;
+}
+a:link {
+  color: #fff;
+  text-decoration: none;
+}
+a:hover {
+  text-shadow: 0 0 12px #fff, 0 0 17px #fff, 0 0 20px #13ff03, 0 0 23px #13ff03, 0 0 25px #13ff03, 0 0 30px #13ff03, 0 0 35px #13ff03; 
+}
